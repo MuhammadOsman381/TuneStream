@@ -10,6 +10,7 @@ import Drawer from "@/components/Drawer";
 import { FaPlus } from "react-icons/fa6";
 import { FaRegUser } from "react-icons/fa";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 interface SongArray {
   _id: string;
@@ -47,7 +48,7 @@ const Page = () => {
 
   const { search, setSearch, isLikedOrDislikeState, setIsLikedOrDislikeState } =
     useSearchContext();
-
+  const router = useRouter();
   const [songsArray, setSongsArray] = useState<SongArray[]>([]);
   const [currentSong, setCurrentSong] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
@@ -174,8 +175,8 @@ const Page = () => {
     });
   };
 
-  const addValueToLocalStorage = (id:string) =>{
-    localStorage.setItem("artistId",id);
+  const addValueToLocalStorage = (id: string) => {
+    router.push(`/user/artist-profile/${id}`)
   }
 
   function initCap(str: string): string {
@@ -185,117 +186,123 @@ const Page = () => {
       .join(" ");
   }
 
+
+  const ShowModel = () =>{
+    const model = document.getElementById('my_modal_5') as HTMLDialogElement
+    model.showModal();
+  }
+
+
+
   return (
     <>
       <div className="flex items-center flex-col justify-center w-full ">
         <div className="p-5 flex flex-row items-center justify-center flex-wrap gap-5">
           {loading
             ? Array.from({ length: 10 }).map((_, index) => (
-                <SkeletonLoader key={index} />
-              ))
+              <SkeletonLoader key={index} />
+            ))
             : filteredSongs?.length !== 0 &&
-              filteredSongs?.map((items: SongArray) => (
-                <div
-                  key={items._id}
-                  onClick={() =>
-                    openDrawer(
-                      items._id,
-                      items.title,
-                      items.thumbnail,
-                      items.artistName,
-                      items.likes,
-                      items.dislikes,
-                      items.createdAt
-                    )
-                  }
-                  className="card  max-w-sm cursor-pointer bg-white text-gray-600 rounded-lg shadow-md p-4 transform transition duration-500 hover:scale-105 hover:shadow-lg w-[40vw] max-sm:w-[41vh]"
-                >
-                  <div className="relative  flex items-center">
-                    <div className="relative w-24 h-24 rounded-xl ">
-                      <img
-                        src={items.thumbnail}
-                        alt={items.title}
-                        className="w-full h-full rounded-xl object-cover"
-                      />
-                      <button
-                        onClick={() => handlePlayPause(items.song)}
-                        className="absolute inset-0 rounded-xl flex items-center justify-center bg-black bg-opacity-50 opacity-0 hover:opacity-100 transition-opacity duration-300"
-                        aria-label="Play"
-                      >
-                        <FaPlay className="text-white text-xl" />
-                      </button>
+            filteredSongs?.map((items: SongArray) => (
+              <div
+                key={items._id}
+                onClick={() =>
+                  openDrawer(
+                    items._id,
+                    items.title,
+                    items.thumbnail,
+                    items.artistName,
+                    items.likes,
+                    items.dislikes,
+                    items.createdAt
+                  )
+                }
+                className="card  max-w-sm cursor-pointer bg-white text-gray-600 rounded-lg shadow-md p-4 transform transition duration-500 hover:scale-105 hover:shadow-lg w-[40vw] max-sm:w-[41vh]"
+              >
+                <div className="relative  flex items-center">
+                  <div className="relative w-24 h-24 rounded-xl ">
+                    <img
+                      src={items.thumbnail}
+                      alt={items.title}
+                      className="w-full h-full rounded-xl object-cover"
+                    />
+                    <button
+                      onClick={() => handlePlayPause(items.song)}
+                      className="absolute inset-0 rounded-xl flex items-center justify-center bg-black bg-opacity-50 opacity-0 hover:opacity-100 transition-opacity duration-300"
+                      aria-label="Play"
+                    >
+                      <FaPlay className="text-white text-xl" />
+                    </button>
+                  </div>
+                  <div className="ml-4 flex-1  ">
+                    <div onClick={() => setIsDrawerOpen(!isDrawerOpen)}>
+                      <h3 className="text-lg font-semibold ">
+                        {initCap(items.title)}
+                      </h3>
                     </div>
-                    <div className="ml-4 flex-1  ">
-                      <div onClick={() => setIsDrawerOpen(!isDrawerOpen)}>
-                        <h3 className="text-lg font-semibold ">
-                          {initCap(items.title)}
-                        </h3>
-                      </div>
-                      <p
-                        onClick={() => setIsDrawerOpen(!isDrawerOpen)}
-                        className="text-gray-400"
-                      >
-                        {initCap(items.artistName)}
-                      </p>
-                      <div className="mr-4 flex flex-col items-start justify-start">
-                        <div className="flex items-center gap-3">
-                          <span
-                            onClick={() => setIsDrawerOpen(!isDrawerOpen)}
-                            className="flex flex-row text-blue-500 gap-1 items-start justify-center"
-                          >
-                            <span className="font-semibold text-md">
-                              {"Likes"}
-                            </span>
-                            <span>{items.likes.length}</span>
+                    <p
+                      onClick={() => setIsDrawerOpen(!isDrawerOpen)}
+                      className="text-gray-400"
+                    >
+                      {initCap(items.artistName)}
+                    </p>
+                    <div className="mr-4 flex flex-col items-start justify-start">
+                      <div className="flex items-center gap-3">
+                        <span
+                          onClick={() => setIsDrawerOpen(!isDrawerOpen)}
+                          className="flex flex-row text-blue-500 gap-1 items-start justify-center"
+                        >
+                          <span className="font-semibold text-md">
+                            {"Likes"}
                           </span>
-                          <span
-                            onClick={() => setIsDrawerOpen(!isDrawerOpen)}
-                            className="flex flex-row text-red-500 gap-1 items-end justify-center"
-                          >
-                            <span className="font-semibold text-md">
-                              {"Dislikes"}
-                            </span>
-                            <span>{items.dislikes.length}</span>
+                          <span>{items.likes.length}</span>
+                        </span>
+                        <span
+                          onClick={() => setIsDrawerOpen(!isDrawerOpen)}
+                          className="flex flex-row text-red-500 gap-1 items-end justify-center"
+                        >
+                          <span className="font-semibold text-md">
+                            {"Dislikes"}
                           </span>
+                          <span>{items.dislikes.length}</span>
+                        </span>
+                        <div
+                          onClick={() => setIsDrawerOpen(false)}
+                          className="dropdown  dropdown-bottom dropdown-left"
+                        >
                           <div
                             onClick={() => setIsDrawerOpen(false)}
-                            className="dropdown  dropdown-bottom dropdown-left"
+                            tabIndex={0}
+                            role="button"
+                            className="btn btn-sm ml-2 z-50 hover:bg-gray-200 shadow-none bg-gray-100 border-none text-gray-500 text-xl"
                           >
-                            <div
-                              onClick={() => setIsDrawerOpen(false)}
-                              tabIndex={0}
-                              role="button"
-                              className="btn btn-sm ml-2 z-50 hover:bg-gray-200 shadow-none bg-gray-100 border-none text-gray-500 text-xl"
-                            >
-                              <BsThreeDots />
-                            </div>
-                            <ul
-                              tabIndex={0}
-                              className="dropdown-content menu bg-white  rounded-box z-20 w-52 p-2 "
-                            >
-                              <li onClick={() => setIsDrawerOpen(false)}>
-                                <a>
-                                  <FaPlus /> Add to Playlist
-                                </a>
-                              </li>
-                              <li onClick={() => setIsDrawerOpen(false)}>
-                                <Link
-                                onClick={()=>addValueToLocalStorage(items?.artistId)}
-                                href={"/user/artist-profile"} >
-                                  <FaRegUser /> Go to Profile{" "}
-                                </Link>
-                              </li>
-                            </ul>
+                            <BsThreeDots />
                           </div>
+                          <ul
+                            tabIndex={0}
+                            className="dropdown-content menu bg-white  rounded-box z-20 w-52 p-2 "
+                          >
+                            <li onClick={() => setIsDrawerOpen(false)}>
+                              <a>
+                                <FaPlus /> Add to Playlist
+                              </a>
+                            </li>
+                            <li onClick={() => addValueToLocalStorage(items?.artistId)}>
+                              <a>
+                              <FaRegUser/> Go to Profile{" "}
+                              </a>
+                            </li>
+                          </ul>
                         </div>
-                        <span className="text-sm text-gray-500">
-                          {new Date(items?.createdAt).toLocaleString()}
-                        </span>
                       </div>
+                      <span className="text-sm text-gray-500">
+                        {new Date(items?.createdAt).toLocaleString()}
+                      </span>
                     </div>
                   </div>
                 </div>
-              ))}
+              </div>
+            ))}
         </div>
 
         {currentSong && (
@@ -414,11 +421,9 @@ const Page = () => {
                   onChange={handleSeek}
                   className="w-[45vw] h-2 bg-gray-300 cursor-pointer rounded-lg appearance-none hover:scale-105 transition-all"
                   style={{
-                    background: `linear-gradient(to right, blue 0%, skyblue ${
-                      (currentTime / duration) * 100
-                    }%, lightgray ${
-                      (currentTime / duration) * 100
-                    }%, lightgray 100%)`,
+                    background: `linear-gradient(to right, blue 0%, skyblue ${(currentTime / duration) * 100
+                      }%, lightgray ${(currentTime / duration) * 100
+                      }%, lightgray 100%)`,
                   }}
                 />
               </div>
@@ -434,6 +439,21 @@ const Page = () => {
             </div>
           </div>
         )}
+
+<button className="btn" onClick={ShowModel}>open modal</button>
+<dialog id="my_modal_5" className="modal modal-bottom sm:modal-middle">
+  <div className="modal-box">
+    <h3 className="font-bold text-lg">Hello!</h3>
+    <p className="py-4">Press ESC key or click the button below to close</p>
+    <div className="modal-action">
+      <form method="dialog">
+        {/* if there is a button in form, it will close the modal */}
+        <button className="btn">Close</button>
+      </form>
+    </div>
+  </div>
+</dialog>
+
 
         <audio
           ref={audioPlayer}

@@ -44,7 +44,7 @@ const Drawer: React.FC<DrawerProps> = ({ isOpen, drawerValues }) => {
   const { isLikedOrDislikeState, setIsLikedOrDislikeState } =
     useSearchContext();
   const endOfCommentRef = useRef<any>(null);
-  const [open, setOpen] = useState<boolean>(isOpen);
+  const [open, setOpen] = useState<Boolean>(isOpen);
   const [comment, setComment] = useState<string>("");
   const [commentsArray, setCommentsArray] = useState([]);
   const [likedOrDislikedStatus, setLikedOrDislikedStatus] =
@@ -241,7 +241,7 @@ const Drawer: React.FC<DrawerProps> = ({ isOpen, drawerValues }) => {
             <h5 className="text-lg font-semibold text-gray-600 mb-2">
               Comments
             </h5>
-            <div className="min-h-[20vh] max-sm:min-h-[50vh]">
+            <div className="min-h-[35vh] max-sm:min-h-[50vh]">
               {commentsArray?.length !== 0 &&
                 commentsArray?.map((items: any) => (
                   <div className="flex items-start px-4 py-2 bg-gray-100  rounded-lg mb-2 space-x-4">
@@ -274,7 +274,7 @@ const Drawer: React.FC<DrawerProps> = ({ isOpen, drawerValues }) => {
           </div>
           <div ref={endOfCommentRef}></div>
 
-          <div className=" border-t border-t-gray-300 flex flex-col mt-auto px-4 py-3 ">
+          <div className=" border-t h-[10vh] border-t-gray-300 flex flex-col mt-auto px-4 py-3 ">
             <div className="flex">
               <input
                 type="text"

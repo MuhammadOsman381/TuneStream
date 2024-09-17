@@ -50,6 +50,7 @@ export async function GET(request: Request) {
       followedArtist: user?.followedArtist || [],
     };
 
+
     return new Response(
       JSON.stringify({
         success: true,

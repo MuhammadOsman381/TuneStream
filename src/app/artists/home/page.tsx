@@ -42,7 +42,7 @@ const Page = () => {
     thumbnail: null,
     song: null,
   };
-  const { search, setSearch } = useSearchContext();
+  const { search } = useSearchContext();
   const [songsArray, setSongsArray] = useState<SongArray[] | null>([]);
   const [currentSong, setCurrentSong] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
@@ -177,73 +177,73 @@ const Page = () => {
           <div className="p-5 flex flex-row items-center justify-center flex-wrap gap-5">
             {loading
               ? Array.from({ length: 10 }).map((_, index) => (
-                  <SkeletonLoader key={index} />
-                ))
+                <SkeletonLoader key={index} />
+              ))
               : filteredSongs?.length !== 0 &&
-                filteredSongs?.map((items: SongArray) => (
-                  <div
-                    key={items._id}
-                    className="card max-w-sm bg-white text-gray-600 rounded-lg shadow-md p-4 transform transition duration-500 hover:scale-105 hover:shadow-lg w-[40vw] max-sm:w-[41vh]"
-                  >
-                    <div className="relative flex items-center">
-                      <div className="relative w-24 h-24 rounded-md overflow-hidden">
-                        <img
-                          src={items.thumbnail}
-                          alt={items.title}
-                          className="w-full h-full object-cover"
-                        />
-                        <button
-                          onClick={() => handlePlayPause(items.song)}
-                          className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 opacity-0 hover:opacity-100 transition-opacity duration-300"
-                          aria-label="Play"
-                        >
-                          <FaPlay className="text-white text-xl" />
-                        </button>
+              filteredSongs?.map((items: SongArray) => (
+                <div
+                  key={items._id}
+                  className="card max-w-sm bg-white text-gray-600 rounded-lg shadow-md p-4 transform transition duration-500 hover:scale-105 hover:shadow-lg w-[40vw] max-sm:w-[41vh]"
+                >
+                  <div className="relative flex items-center">
+                    <div className="relative w-24 h-24 rounded-md overflow-hidden">
+                      <img
+                        src={items.thumbnail}
+                        alt={items.title}
+                        className="w-full h-full object-cover"
+                      />
+                      <button
+                        onClick={() => handlePlayPause(items.song)}
+                        className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 opacity-0 hover:opacity-100 transition-opacity duration-300"
+                        aria-label="Play"
+                      >
+                        <FaPlay className="text-white text-xl" />
+                      </button>
+                    </div>
+                    <div className="ml-4 flex-1">
+                      <div>
+                        <h3 className="text-lg font-semibold ">
+                          {items.title}
+                        </h3>
                       </div>
-                      <div className="ml-4 flex-1">
-                        <div>
-                          <h3 className="text-lg font-semibold ">
-                            {items.title}
-                          </h3>
-                        </div>
-                        <p className="text-gray-400">{items.artistName}</p>
-                        <div className="mr-4 flex flex-col items-start justify-start">
-                          <div className="flex items-center gap-3">
-                            <span className="flex flex-row gap-1 items-start justify-center">
-                              <span>{items.likes.length}</span>
-                              <FaThumbsUp className="text-blue-500 text-lg" />
-                            </span>
-                            <span className="flex flex-row gap-1 items-end justify-center">
-                              <span>{items.dislikes.length}</span>
-                              <FaThumbsDown className="text-red-500 text-lg" />
-                            </span>
-                          </div>
-                          <span className="text-sm text-gray-500">
-                            {new Date(items?.createdAt).toLocaleString()}
+                      <p className="text-gray-400">{items.artistName}</p>
+                      <div className="mr-4 flex flex-col items-start justify-start">
+                        <div className="flex items-center gap-3">
+                          <span className="flex flex-row gap-1 items-start justify-center">
+                            <span>{items.likes.length}</span>
+                            <FaThumbsUp className="text-blue-500 text-lg" />
+                          </span>
+                          <span className="flex flex-row gap-1 items-end justify-center">
+                            <span>{items.dislikes.length}</span>
+                            <FaThumbsDown className="text-red-500 text-lg" />
                           </span>
                         </div>
+                        <span className="text-sm text-gray-500">
+                          {new Date(items?.createdAt).toLocaleString()}
+                        </span>
                       </div>
                     </div>
-                    <div className="w-full flex flex-row items-center justify-end">
-                      <button
-                        onClick={() =>
-                          editSong(
-                            items?._id,
-                            items?.title,
-                            items?.thumbnail,
-                            items?.song
-                          )
-                        }
-                        className="mr-4 cursor-pointer"
-                      >
-                        <FaEdit className="text-blue-500 text-lg hover:scale-125 transition-all" />
-                      </button>
-                      <button onClick={() => deleteSong(items._id)}>
-                        <FaTrash className="text-red-500 text-lg cursor-pointer hover:scale-125 transition-all" />
-                      </button>
-                    </div>
                   </div>
-                ))}
+                  <div className="w-full flex flex-row items-center justify-end">
+                    <button
+                      onClick={() =>
+                        editSong(
+                          items?._id,
+                          items?.title,
+                          items?.thumbnail,
+                          items?.song
+                        )
+                      }
+                      className="mr-4 cursor-pointer"
+                    >
+                      <FaEdit className="text-blue-500 text-lg hover:scale-125 transition-all" />
+                    </button>
+                    <button onClick={() => deleteSong(items._id)}>
+                      <FaTrash className="text-red-500 text-lg cursor-pointer hover:scale-125 transition-all" />
+                    </button>
+                  </div>
+                </div>
+              ))}
           </div>
 
           {currentSong && (
@@ -365,11 +365,9 @@ const Page = () => {
                     onChange={handleSeek}
                     className="w-[45vw] h-2 bg-gray-300 cursor-pointer rounded-lg appearance-none hover:scale-105 transition-all"
                     style={{
-                      background: `linear-gradient(to right, blue 0%, skyblue ${
-                        (currentTime / duration) * 100
-                      }%, lightgray ${
-                        (currentTime / duration) * 100
-                      }%, lightgray 100%)`,
+                      background: `linear-gradient(to right, blue 0%, skyblue ${(currentTime / duration) * 100
+                        }%, lightgray ${(currentTime / duration) * 100
+                        }%, lightgray 100%)`,
                     }}
                   />
                 </div>

@@ -92,10 +92,10 @@ const UserNavBar = () => {
             className="menu menu-sm dropdown-content bg-white text-gray-500 rounded-box z-[1] mt-20 w-52 p-2 shadow"
           >
             <li className="justify-between">
-              <Link href="/artists/home">Home</Link>
+              <Link href="/user/home">Home</Link>
             </li>
             <li>
-              <Link href="/artists/upload">Upload Songs</Link>
+              <Link href="/user/user-profile">Profile</Link>
             </li>
             <li
               className="btn btn-primary btn-sm text-white"
@@ -107,34 +107,7 @@ const UserNavBar = () => {
         </div>
       </div>
 
-      {/* Drawer for Sidebar Navigation */}
-      {/* <div className="drawer z-50">
-        <input id="my-drawer" type="checkbox" className="drawer-toggle" />
-        <div className="drawer-side">
-          <label htmlFor="my-drawer" className="drawer-overlay"></label>
-          <ul className="menu bg-white text-gray-600 min-h-full w-80 p-4">
 
-            <li className="hover:scale-105 transition-transform">
-              <Link href="/artists/home">
-                <span>Home</span>
-              </Link>
-            </li>
-            <li className="hover:scale-105 transition-transform">
-              <Link href="/artists/upload">
-                <span>Upload Song</span>
-              </Link>
-            </li>
-            <li
-              onClick={logout_user}
-              className="hover:scale-105 transition-transform w-24"
-            >
-              <span className="btn btn-primary btn-sm bg-blue-600 text-white">
-                Logout
-              </span>
-            </li>
-          </ul>
-        </div>
-      </div> */}
     </div>
   );
 };
