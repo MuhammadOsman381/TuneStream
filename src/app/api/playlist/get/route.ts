@@ -6,25 +6,31 @@ import fs from "fs";
 import SongModel from "@/models/Song";
 import UserModel from "@/models/User";
 import PlayListModel from "@/models/Playlist";
+import mongoose from "mongoose";
 
-export async function POST(request: Request) {
+export async function GET(request: Request) {
     await dbConnection();
     try {
-        const formData = await request.formData();
-        const title: string | null = formData.get("title") as string | null;
         const token: any = request.headers.get("x-access-token");
         const decodedToken: any = jwt.decode(token);
-        const user = await UserModel.findOne({ _id: decodedToken.id })
-        const newPlayList: any = await PlayListModel.create({
-            title: title,
-            user: user?._id,
-        })
-        user?.playlist.push(newPlayList?._id)
-        user?.save();
+        const user: any = await UserModel.findOne({ _id: decodedToken.id })
+        if (user?.playlist?.length === 0) {
+            return new Response(
+                JSON.stringify({
+                    success: false,
+                    message: "Playlist not found!",
+                }),
+                { status: 404 }
+            );
+        }
+        let userPlayLists = await Promise.all(user?.playlist?.map(async (items: mongoose.Types.ObjectId) => (
+            await PlayListModel.findOne({ _id: items })
+        )))
         return new Response(
             JSON.stringify({
                 success: true,
-                message: "Playlist create succesfully!",
+                message: "Playlist fetched succesfully!",
+                userPlayLists: userPlayLists,
             }),
             { status: 200 }
         );

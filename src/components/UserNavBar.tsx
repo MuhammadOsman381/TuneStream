@@ -97,6 +97,9 @@ const UserNavBar = () => {
             <li>
               <Link href="/user/user-profile">Profile</Link>
             </li>
+            <li>
+              <Link href="/user/followed-artists">Followed Artists</Link>
+            </li>
             <li
               className="btn btn-primary btn-sm text-white"
               onClick={logout_user}
@@ -106,8 +109,6 @@ const UserNavBar = () => {
           </ul>
         </div>
       </div>
-
-
     </div>
   );
 };

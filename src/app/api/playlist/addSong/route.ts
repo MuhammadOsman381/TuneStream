@@ -11,20 +11,25 @@ export async function POST(request: Request) {
     await dbConnection();
     try {
         const formData = await request.formData();
-        const title: string | null = formData.get("title") as string | null;
-        const token: any = request.headers.get("x-access-token");
-        const decodedToken: any = jwt.decode(token);
-        const user = await UserModel.findOne({ _id: decodedToken.id })
-        const newPlayList: any = await PlayListModel.create({
-            title: title,
-            user: user?._id,
-        })
-        user?.playlist.push(newPlayList?._id)
-        user?.save();
+        const songID: string | null = formData.get("songID") as string | null;
+        const playListID: string | null = formData.get("playListID") as string | null
+        const song: any = await SongModel.findOne({ _id: songID })
+        const playList = await PlayListModel.findOne({ _id: playListID })
+        if (playList?.songs.includes(song?._id)) {
+            return new Response(
+                JSON.stringify({
+                    success: false,
+                    message: `${song?.title} already exist in ${playList?.title}!`,
+                }),
+                { status: 409 }
+            );
+        }
+        playList?.songs.push(song?._id)
+        playList?.save()
         return new Response(
             JSON.stringify({
                 success: true,
-                message: "Playlist create succesfully!",
+                message: `Song added to ${playList?.title} succesfully!`,
             }),
             { status: 200 }
         );

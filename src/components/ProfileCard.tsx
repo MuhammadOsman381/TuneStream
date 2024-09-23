@@ -10,7 +10,6 @@ interface UserProfile {
   email: string;
   songs: string[];
   followers: string[];
-
 }
 
 const ProfileCard = () => {

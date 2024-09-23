@@ -7,14 +7,18 @@ import React, { useState } from "react";
 import toast from "react-hot-toast";
 import { PiUploadSimple } from "react-icons/pi";
 
-const EditSong :React.FC<any> = ({songValues}) => {
+const EditSong: React.FC<any> = ({ songValues }) => {
   const router = useRouter();
   const [songID, setSongID] = useState<string>(songValues._id);
   const [title, setTitle] = useState<string>(songValues.title);
   const [song, setSong] = useState<any>(songValues.song);
-  const [thumbnail, setThumbnail] = useState<File | null | string>(songValues.thumbnail);
+  const [thumbnail, setThumbnail] = useState<File | null | string>(
+    songValues.thumbnail
+  );
   const [songPreview, setSongPreview] = useState<any>(songValues.song);
-  const [thumbnailPreview, setThumbnailPreview] = useState<any>(songValues.thumbnail);
+  const [thumbnailPreview, setThumbnailPreview] = useState<any>(
+    songValues.thumbnail
+  );
 
   const handleVideoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -61,7 +65,7 @@ const EditSong :React.FC<any> = ({songValues}) => {
         .then((response) => {
           console.log(response.data);
           toast.success(response.data.message);
-        //   router.push("/artists/home");
+          //   router.push("/artists/home");
         })
         .catch((error) => {
           toast.error(error.response.data.message);

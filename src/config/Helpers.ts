@@ -13,7 +13,7 @@ class Helpers {
     },
   };
 
-  static getItem(key: string, isJson = false) {
+  static getItem(key: string, isJson: Boolean = false) {
     const item = localStorage.getItem(key);
     if (isJson && item) {
       try {
@@ -26,7 +26,7 @@ class Helpers {
     return item;
   }
 
-  static setItem(key: string, data: any, isJson = false) {
+  static setItem(key: string, data: any, isJson: Boolean = false) {
     try {
       if (isJson) {
         localStorage.setItem(key, JSON.stringify(data));

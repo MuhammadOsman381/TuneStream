@@ -11,6 +11,8 @@ import { FaPlus } from "react-icons/fa6";
 import { FaRegUser } from "react-icons/fa";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { RiPlayList2Line } from "react-icons/ri";
+import toast from "react-hot-toast";
 
 interface SongArray {
   _id: string;
@@ -33,6 +35,14 @@ interface Drawer {
   likes: string[];
   dislikes: string[];
   createdAt: Date;
+}
+
+interface Playlist {
+  _id: string;
+  title: string;
+  songs: string[];
+  createdAt: string;
+  updatedAt: string;
 }
 
 const Page = () => {
@@ -58,6 +68,8 @@ const Page = () => {
   const [filteredSongs, setFilteredSongs] = useState<SongArray[] | null>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [drawerValues, setDrawerValues] = useState<Drawer>(drawerDefaultValues);
+  const [songID, setSongID] = useState<string>("");
+  const [playlists, setPlaylists] = useState<Playlist[]>([]);
 
   const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
 
@@ -77,8 +89,20 @@ const Page = () => {
       });
   };
 
+  const getPlayListData = () => {
+    axios
+      .get("/api/playlist/get", Helpers.authHeaders)
+      .then((response) => {
+        setPlaylists(response.data.userPlayLists);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
+
   useEffect(() => {
     getArtistSongs();
+    getPlayListData();
   }, [isLikedOrDislikeState]);
 
   const handlePlayPause = (songUrl: string) => {
@@ -175,10 +199,6 @@ const Page = () => {
     });
   };
 
-  const addValueToLocalStorage = (id: string) => {
-    router.push(`/user/artist-profile/${id}`)
-  }
-
   function initCap(str: string): string {
     return str
       .split(" ")
@@ -186,13 +206,36 @@ const Page = () => {
       .join(" ");
   }
 
-
-  const ShowModel = () =>{
-    const model = document.getElementById('my_modal_5') as HTMLDialogElement
+  const ShowModel = (sngID: string) => {
+    setSongID(sngID);
+    const model = document.getElementById("my_modal_5") as HTMLDialogElement;
     model.showModal();
+  };
+
+  const addSongToPlayList = (playListID: string) => {
+    const formData = new FormData();
+    formData.append("playListID", playListID);
+    formData.append("songID", songID);
+    axios
+      .post("/api/playlist/addSong", formData, Helpers.authFileHeaders)
+      .then((response) => {
+        toast.success(response.data.message);
+      })
+      .catch((error) => {
+        toast.error(error.response.data.message);
+      });
+  };
+
+  function formatTime(seconds: number): string {
+    const totalSeconds = Math.floor(seconds);
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const remainingSeconds = totalSeconds % 60;
+    if (hours > 0) {
+      return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`;
+    }
+    return `${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`;
   }
-
-
 
   return (
     <>
@@ -282,16 +325,20 @@ const Page = () => {
                             tabIndex={0}
                             className="dropdown-content menu bg-white  rounded-box z-20 w-52 p-2 "
                           >
-                            <li onClick={() => setIsDrawerOpen(false)}>
+                            <li onClick={() => ShowModel(items?._id)}>
                               <a>
                                 <FaPlus /> Add to Playlist
                               </a>
                             </li>
-                            <li onClick={() => addValueToLocalStorage(items?.artistId)}>
-                              <a>
-                              <FaRegUser/> Go to Profile{" "}
-                              </a>
-                            </li>
+                            <Link
+                              href={`/user/artist-profile/${items?.artistId}`}
+                            >
+                              <li>
+                                <a>
+                                  <FaRegUser /> Go to Profile{" "}
+                                </a>
+                              </li>
+                            </Link>
                           </ul>
                         </div>
                       </div>
@@ -413,19 +460,24 @@ const Page = () => {
                     </svg>
                   </button>
                 </div>
-                <input
-                  type="range"
-                  min="0"
-                  max={duration}
-                  value={currentTime}
-                  onChange={handleSeek}
-                  className="w-[45vw] h-2 bg-gray-300 cursor-pointer rounded-lg appearance-none hover:scale-105 transition-all"
-                  style={{
-                    background: `linear-gradient(to right, blue 0%, skyblue ${(currentTime / duration) * 100
-                      }%, lightgray ${(currentTime / duration) * 100
-                      }%, lightgray 100%)`,
-                  }}
-                />
+                <div className="flex flex-row gap-3 items-center justify-center" >
+                  <input
+                    type="range"
+                    min="0"
+                    max={duration}
+                    value={currentTime}
+                    onChange={handleSeek}
+                    className="w-[45vw] h-2 bg-gray-300 cursor-pointer rounded-lg appearance-none "
+                    style={{
+                      background: `linear-gradient(to right, blue 0%, skyblue ${(currentTime / duration) * 100
+                        }%, lightgray ${(currentTime / duration) * 100
+                        }%, lightgray 100%)`,
+                    }}
+                  />
+                  <div>
+                    {formatTime(currentTime)}
+                  </div>
+                </div>
               </div>
               <input
                 type="range"
@@ -440,20 +492,30 @@ const Page = () => {
           </div>
         )}
 
-<button className="btn" onClick={ShowModel}>open modal</button>
-<dialog id="my_modal_5" className="modal modal-bottom sm:modal-middle">
-  <div className="modal-box">
-    <h3 className="font-bold text-lg">Hello!</h3>
-    <p className="py-4">Press ESC key or click the button below to close</p>
-    <div className="modal-action">
-      <form method="dialog">
-        {/* if there is a button in form, it will close the modal */}
-        <button className="btn">Close</button>
-      </form>
-    </div>
-  </div>
-</dialog>
-
+        <dialog
+          id="my_modal_5"
+          className="modal  text-gray-600 modal-bottom sm:modal-middle"
+        >
+          <div className="modal-box bg-white">
+            <h3 className="font-bold text-lg"> Select your playlist!</h3>
+            {playlists?.length > 0 &&
+              playlists?.map((items) => (
+                <p
+                  onClick={() => addSongToPlayList(items._id)}
+                  className="py-3 mt-3 flex flex-row items-center justify-center gap-2 px-3 hover:scale-110 transition-all hover:bg-gray-300 w-[20vw] shadow bg-gray-200   rounded-xl "
+                >
+                  <RiPlayList2Line /> <span>{items.title} </span>
+                </p>
+              ))}
+            <div className="modal-action">
+              <form method="dialog">
+                <button className="btn btn-sm bg-red-600 text-white hover:scale-110 transition-all hover:bg-red-700 border-none">
+                  Close
+                </button>
+              </form>
+            </div>
+          </div>
+        </dialog>
 
         <audio
           ref={audioPlayer}

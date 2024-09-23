@@ -11,8 +11,10 @@ export default function Home() {
   const router = useRouter();
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
+  const [isLoading, setIsLoading] = useState<Boolean>(false);
 
   const signin = (e: React.FormEvent) => {
+    setIsLoading(true);
     e.preventDefault();
     const formData = new FormData();
     formData.append("email", email);
@@ -27,10 +29,12 @@ export default function Home() {
         console.log(response.data.user.userType);
         if (response.data.user.userType === "user") {
           Helpers.setItem("token", response.data.token);
-          router.push("user/home");
+          Helpers.setItem("userId", response.data.user.id);
+          router.push("/user/home");
         } else if (response.data.user.userType === "artist") {
           Helpers.setItem("token", response.data.token);
-          router.push("artists/home");
+          router.push("/artists/home");
+          setIsLoading(false);
         }
       })
       .catch((error) => {
@@ -94,7 +98,7 @@ export default function Home() {
                   type="submit"
                   className="w-full text-white bg-blue-600 hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
                 >
-                  Sign in
+                  {isLoading ? "Processing..." : "Sign in "}
                 </button>
                 <p className="text-sm font-light text-gray-500">
                   Don’t have an account yet?{" "}

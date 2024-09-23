@@ -15,9 +15,10 @@ interface Profile {
 
 export async function GET(request: Request) {
   await dbConnection();
-
   try {
     const token = request.headers.get("x-access-token");
+    let isFollowed: Boolean = false;
+    const artistID = request.url.split("follow-status/")[1];
     if (!token) {
       return new Response(
         JSON.stringify({
@@ -29,7 +30,6 @@ export async function GET(request: Request) {
     }
     const decodedToken: any = jwt.decode(token)
     const user = await UserModel.findById(decodedToken?.id).lean();
-
     if (!user) {
       return new Response(
         JSON.stringify({
@@ -39,23 +39,16 @@ export async function GET(request: Request) {
         { status: 404 }
       );
     }
-
-    const userProfile: Profile = {
-      _id: user._id.toString(),
-      name: user.name,
-      email: user.email,
-      image: `${process.env.URL}/uploads/image/${user.image}`,
-      likedSongs: user?.likedSongs || [],
-      playlist: user?.playlist || [],
-      followedArtist: user?.followedArtist || [],
-    };
-
-
+    const status = user?.followedArtist?.filter((id) => (id.toString() === artistID.toString()))
+    if (status.length > 0) {
+      isFollowed = true
+    }
+    console.log(isFollowed)
     return new Response(
       JSON.stringify({
         success: true,
         message: "User profile fetched successfully",
-        userProfile,
+        followStatus: isFollowed,
       }),
       { status: 200 }
     );

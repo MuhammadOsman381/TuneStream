@@ -22,7 +22,7 @@ export async function POST(request: Request) {
         { status: 404 }
       );
     }
-    const user: any = await UserModel.findOne({
+    const userData: any = await UserModel.findOne({
       _id: decodedToken?.id,
     });
     const song: any = await SongModel.findOne({
@@ -30,18 +30,24 @@ export async function POST(request: Request) {
     });
     const newComment: any = await CommentModel.create({
       content: comment,
-      userId: user._id,
+      userId: userData._id,
       songId: songId,
     });
     song.comments.push(newComment._id);
     await song.save();
-    user.comments.push(newComment._id);
-    await user.save();
-    console.log(user);
+    userData.comments.push(newComment._id);
+    await userData.save();
+
+    let commentObj = {
+      comment: newComment,
+      user: { userData, image: `${process.env.URL}/uploads/image/${userData?.image}`},
+    }
+
     return new Response(
       JSON.stringify({
         success: true,
         message: "comment added succesfully!",
+        commentObj: commentObj
       }),
       { status: 200 }
     );

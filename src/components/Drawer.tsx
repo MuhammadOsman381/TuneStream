@@ -1,6 +1,5 @@
 "use client";
 import { useSearchContext } from "@/app/context/SearchContext";
-import Helpers from "@/config/Helpers";
 import axios from "axios";
 import React, { useEffect, useRef, useState } from "react";
 import {
@@ -11,6 +10,9 @@ import {
   FaRegThumbsUp,
   FaRegThumbsDown,
 } from "react-icons/fa";
+import { io } from "socket.io-client";
+import { FaTrashAlt } from "react-icons/fa";
+import Helpers from "@/config/Helpers";
 
 interface DrawerInterface {
   _id: string;
@@ -46,13 +48,12 @@ const Drawer: React.FC<DrawerProps> = ({ isOpen, drawerValues }) => {
   const endOfCommentRef = useRef<any>(null);
   const [open, setOpen] = useState<Boolean>(isOpen);
   const [comment, setComment] = useState<string>("");
-  const [commentsArray, setCommentsArray] = useState([]);
+  const [commentsArray, setCommentsArray] = useState<any>([]);
   const [likedOrDislikedStatus, setLikedOrDislikedStatus] =
     useState<DefaultLikedOrDisliked>(defaultLikedOrDislikedStatus);
-
-  useEffect(() => {
-    setOpen(isOpen);
-  }, [isOpen]);
+  const socketRef: any = useRef(null);
+  const userId = Helpers.getItem("userId");
+  const [refresher, setRefresher] = useState<Boolean>(false);
 
   useEffect(() => {
     if (endOfCommentRef.current) {
@@ -72,23 +73,10 @@ const Drawer: React.FC<DrawerProps> = ({ isOpen, drawerValues }) => {
     const formData = new FormData();
     formData.append("songId", drawerValues._id);
     formData.append("comment", comment);
-
     axios
       .post("/api/comment/add", formData, Helpers.authFileHeaders)
       .then((response) => {
-        console.log(response.data);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  };
-
-  const getSongComments = () => {
-    axios
-      .get(`/api/comment/get/${drawerValues._id}`, Helpers.authHeaders)
-      .then((response) => {
-        console.log(response.data.comments);
-        setCommentsArray(response.data.comments);
+        socketRef.current.emit("add-comment", response.data.commentObj);
       })
       .catch((error) => {
         console.log(error);
@@ -106,8 +94,8 @@ const Drawer: React.FC<DrawerProps> = ({ isOpen, drawerValues }) => {
         setLikedOrDislikedStatus({
           likedStatus: response.data.likedStatus,
           dislikedStatus: response.data.dislikedStatus,
-          likes:response.data.likes,
-          dislikes:response.data.dislikes
+          likes: response.data.likes,
+          dislikes: response.data.dislikes,
         });
       })
       .catch((error) => {
@@ -146,29 +134,72 @@ const Drawer: React.FC<DrawerProps> = ({ isOpen, drawerValues }) => {
       });
   };
 
+
+  const getComments = async () => {
+    socketRef.current = io("http://192.168.18.8:5000");
+    socketRef.current.on("load-comments", (loadedMessages: any) => {
+      setCommentsArray(loadedMessages);
+    });
+    socketRef.current.on("add-comment", (newMessage: any) => {
+      setCommentsArray((prevMessages: any) => [...prevMessages, newMessage]);
+    });
+    socketRef.current.on("connect_error", (error: any) => {
+      console.error("Socket connection error:", error);
+    });
+  }
+
+  const deleteComment = (id: string) => {
+    axios.delete(`/api/comment/delete/${id}`)
+      .then((response) => {
+        console.log(response)
+        setRefresher(!refresher)
+      })
+      .catch((error) => {
+        console.log(error)
+      })
+  }
+
+  useEffect(() => {
+    axios.get(`/api/comment/get/${drawerValues._id}`)
+      .then((response) => {
+        socketRef.current.emit("load-comments", response.data.comments)
+      })
+      .catch((error) => {
+        console.log(error)
+      })
+  }, [refresher])
+
+  useEffect(() => {
+    if (drawerValues._id) {
+      getComments();
+      return () => {
+        if (socketRef.current) {
+          socketRef.current?.disconnect();
+        }
+      };
+    }
+  }, []);
+
   useEffect(() => {
     getUserLikedOrDislikedDetails();
   }, [isLikedOrDislikeState]);
 
   useEffect(() => {
-    getSongComments();
-  }, []);
+    setOpen(isOpen);
+  }, [isOpen]);
 
   return (
     <>
       <div
-        className={`${
-          open ? "fixed inset-0 bg-black bg-opacity-50 z-40" : "hidden"
-        }`}
+        className={`${open ? "fixed inset-0 bg-black bg-opacity-50 z-40" : "hidden"}`}
         aria-hidden="true"
         onClick={closeDrawer}
       ></div>
 
       <div
         tabIndex={-1}
-        className={`overflow-auto fixed top-0 right-0 h-full bg-white shadow-xl transition-transform transform ${
-          open ? "translate-x-0" : "translate-x-full"
-        } w-[30vw] max-sm:w-[80vw] z-50 flex flex-col`}
+        className={`overflow-auto fixed top-0 right-0 h-full bg-white shadow-xl transition-transform transform ${open ? "translate-x-0" : "translate-x-full"
+          } w-[30vw] max-sm:w-[80vw] z-50 flex flex-col`}
         role="dialog"
         aria-modal="true"
       >
@@ -266,7 +297,15 @@ const Drawer: React.FC<DrawerProps> = ({ isOpen, drawerValues }) => {
                           )}
                         </span>
                       </div>
-                      <p className="text-gray-600">{items.comment.content}</p>
+                      <span className="w-full   flex flex-row items-center justify-between" >
+                        <p className="text-gray-600">{items.comment.content}</p>
+                        {
+                          userId === items.user.userData._id &&
+                          <FaTrashAlt
+                            onClick={() => deleteComment(items.comment._id)}
+                            className="text-red-500 cursor-pointer hover:scale-105 transition-all" />
+                        }
+                      </span>
                     </div>
                   </div>
                 ))}

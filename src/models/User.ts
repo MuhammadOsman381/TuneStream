@@ -52,7 +52,7 @@ const UserSchema: Schema<User> = new Schema(
     playlist: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Song",
+        ref: "PlayList",
       },
     ],
     followedArtist: [

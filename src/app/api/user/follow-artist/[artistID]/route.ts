@@ -3,21 +3,14 @@ import ArtistModel from "@/models/Artist";
 import UserModel from "@/models/User";
 import jwt from "jsonwebtoken";
 
-interface Profile {
-  _id: string | null;
-  name: string | null;
-  email: string | null;
-  image: string | null;
-  likedSongs: Object[] | null;
-  playlist: Object[] | null;
-  followedArtist: Object[] | null;
-}
+
 
 export async function GET(request: Request) {
   await dbConnection();
-
   try {
     const token = request.headers.get("x-access-token");
+    let isFollowed: Boolean = false;
+    const artistID = request.url.split("follow-artist/")[1];
     if (!token) {
       return new Response(
         JSON.stringify({
@@ -28,34 +21,35 @@ export async function GET(request: Request) {
       );
     }
     const decodedToken: any = jwt.decode(token)
-    const user = await UserModel.findById(decodedToken?.id).lean();
+    const user = await UserModel.findById(decodedToken?.id);
+    const artist = await ArtistModel.findOne({ _id: artistID });
 
-    if (!user) {
+    if (!user || !artist) {
       return new Response(
         JSON.stringify({
           success: false,
-          message: "user not found",
+          message: "user and artist not found",
         }),
         { status: 404 }
       );
     }
-
-    const userProfile: Profile = {
-      _id: user._id.toString(),
-      name: user.name,
-      email: user.email,
-      image: `${process.env.URL}/uploads/image/${user.image}`,
-      likedSongs: user?.likedSongs || [],
-      playlist: user?.playlist || [],
-      followedArtist: user?.followedArtist || [],
-    };
-
-
+    if (user.followedArtist.includes(artist?._id) || artist.followers.includes(user?._id)) {
+      user.followedArtist = user.followedArtist.filter((id) => id.toString() !== artist._id.toString())
+      user.save()
+      artist.followers = artist.followers.filter((id) => id.toString() !== user._id.toString())
+      artist.save()
+    }
+    else {
+      user.followedArtist.push(artist?._id)
+      user.save()
+      artist.followers.push(user?._id)
+      artist.save()
+    }
     return new Response(
       JSON.stringify({
         success: true,
         message: "User profile fetched successfully",
-        userProfile,
+        followStatus: isFollowed,
       }),
       { status: 200 }
     );

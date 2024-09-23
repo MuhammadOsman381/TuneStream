@@ -18,15 +18,13 @@ interface UserProfile {
 
 const ArtistNavBar = () => {
   const { search, setSearch } = useSearchContext();
-
   const router = useRouter();
-
   const logout_user = () => {
     toast.success("User logged out successfully!");
     localStorage.clear();
     router.push("/");
   };
-
+  
   const defaultUserData = {
     _id: "",
     name: "",
